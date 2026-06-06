@@ -96,6 +96,49 @@ def association(text_1: str, text_2: str) -> float:
     return similar_ratio
 
 
+def title_association(text_1: str, text_2: str) -> float:
+    """
+    专用于音乐标题匹配的相似度计算。
+    利用标题通常排在版本/后缀信息前面的结构特征，
+    通过公共前缀匹配而非最长公共子串，避免后缀劫持匹配结果。
+
+    例: "春日影 (MyGO!!!!! ver.)" vs "栞 (MyGO!!!!! ver.)"
+        → 前缀从第一个字就不匹配 → 0.0 (LCS 会因后缀给 0.85)
+    例: "春日影 (MyGO!!!!! ver.)" vs "春日影"
+        → 前缀匹配 "春日影" → 1.0 (LCS 只给 0.15)
+
+    :param text_1: 查询标题（文件 tag 或用户输入）
+    :param text_2: 候选标题（搜索结果）
+    :return: 相似度 float: 0~1
+    """
+    if not text_1 or not text_2:
+        return 0.0
+    t1 = text_1.lower()
+    t2 = text_2.lower()
+    if t1 == t2:
+        return 1.0
+
+    # 公共前缀匹配 — 标题几乎都在字符串开头
+    prefix = 0
+    for a, b in zip(t1, t2):
+        if a == b:
+            prefix += 1
+        else:
+            break
+    shorter = min(len(t1), len(t2))
+    prefix_score = prefix / shorter if shorter > 0 else 0.0
+
+    # 包含关系作为后备 — 处理 "潜在表明" ⊂ "潜在表明 - From THE FIRST TAKE"
+    if t1 in t2:
+        contain_score = len(t1) / len(t2)
+    elif t2 in t1:
+        contain_score = len(t2) / len(t1)
+    else:
+        contain_score = 0.0
+
+    return max(prefix_score, contain_score)
+
+
 def assoc_artists(text_1: str, text_2: str) -> float:
     if text_1 == "":
         return 0.5

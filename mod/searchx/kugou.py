@@ -66,7 +66,7 @@ async def a_search(title='', artist='', album=''):
                         song_hash = song_item["hash"]
                         album_id = song_item["album_id"]
                         album_name = song_item.get("album_name", "")
-                        title_conform_ratio = textcompare.association(title, song_name)
+                        title_conform_ratio = textcompare.title_association(title, song_name)
                         artist_conform_ratio = textcompare.assoc_artists(artist, singer_name)
                         ratio: float = (title_conform_ratio * (artist_conform_ratio+1)/2) ** 0.5
                         if ratio >= 0.2:

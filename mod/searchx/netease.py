@@ -280,7 +280,7 @@ async def search_track(session, title, artist, album):
         album_ = song_item.get("al")
         album_name = album_['name'] if album_ is not None else ''
         # 取所有名字中最高的相似度
-        title_conform_ratio = max([textcompare.association(title, name) for name in song_names])
+        title_conform_ratio = max([textcompare.title_association(title, name) for name in song_names])
 
         artist_conform_ratio = textcompare.assoc_artists(artist, singer_name)
         album_conform_ratio = textcompare.association(album, album_name)
