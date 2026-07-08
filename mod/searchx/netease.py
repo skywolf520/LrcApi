@@ -218,7 +218,7 @@ async def a_search(title='', artist='', album=''):
     if not any((title, artist, album)):
         return None
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(trust_env=True) as session:
         # 查询歌曲, 包括封面和歌词
         if title:
             return await search_track(session, title=title, artist=artist, album=album)

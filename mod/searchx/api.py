@@ -10,7 +10,6 @@ LRC_API_URL = os.environ.get('LRC_API_URL', 'https://api.lrc.cx')
 
 
 headers = {
-    "Host": "127.0.0.1",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 LrcAPI",
     "Authorization": args("token")
 }

@@ -51,7 +51,7 @@ async def a_search(title='', artist='', album=''):
         return None
     result_list = []
     limit = 3
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(trust_env=True) as session:
         async with session.get(
                 f"http://mobilecdn.kugou.com/api/v3/search/song?format=json&keyword={' '.join([item for item in [title, artist, album] if item])}&page=1&pagesize=2&showtype=1",
                 headers=headers) as response:
