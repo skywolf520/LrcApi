@@ -15,20 +15,6 @@ LRC_API_URL = os.environ.get('LRC_API_URL', 'https://api.lrc.cx')
 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"}
 
 
-# 跟踪重定向
-
-def follow_redirects(url, max_redirects=10):
-    for _ in range(max_redirects):
-        response = requests.head(url, allow_redirects=False)
-        if response.status_code == 200:
-            return url
-        elif 300 <= response.status_code < 400:
-            url = response.headers['Location']
-        else:
-            abort(404)  # 或者根据需求选择其他状态码
-    abort(404)          # 达到最大重定向次数仍未获得 200 状态码，放弃
-
-
 def local_cover_search(title: str, artist: str, album: str):
     result: list = searchx.search_all(title=title, artist=artist, album=album, timeout=30)
     for item in result:
@@ -36,7 +22,8 @@ def local_cover_search(title: str, artist: str, album: str):
             try:
                 res = requests.get(cover_url, headers=headers, timeout=10)
                 if res.status_code == 200:
-                    return res.content, 200, {"Content-Type": res.headers['Content-Type']}
+                    content_type = res.headers.get('Content-Type', 'image/jpeg')
+                    return res.content, 200, {"Content-Type": content_type}
             except requests.RequestException:
                 continue
 
@@ -55,10 +42,11 @@ def cover_api():
     try:
         result = requests.get(target_url, params=req_args, headers=headers, timeout=10)
         if result.status_code == 200:
-            return result.content, 200, {"Content-Type": result.headers['Content-Type']}
+            content_type = result.headers.get('Content-Type', 'image/jpeg')
+            return result.content, 200, {"Content-Type": content_type}
         elif result.status_code == 404:
             pass
-    except requests.RequestException as e:
+    except requests.RequestException:
         # 聚合 API 不可达，降级到本地平台搜索
         pass
 
