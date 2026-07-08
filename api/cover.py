@@ -33,9 +33,12 @@ def local_cover_search(title: str, artist: str, album: str):
     result: list = searchx.search_all(title=title, artist=artist, album=album, timeout=30)
     for item in result:
         if cover_url := item.get('cover'):
-            res = requests.get(cover_url, headers=headers)
-            if res.status_code == 200:
-                return res.content, 200, {"Content-Type": res.headers['Content-Type']}
+            try:
+                res = requests.get(cover_url, headers=headers, timeout=10)
+                if res.status_code == 200:
+                    return res.content, 200, {"Content-Type": res.headers['Content-Type']}
+            except requests.RequestException:
+                continue
 
 
 @app.route('/cover', methods=['GET'], endpoint='cover_endpoint')
@@ -49,15 +52,19 @@ def cover_api():
     req_args = {key: request.args.get(key) for key in request.args}
     # 构建目标URL
     target_url = f'{LRC_API_URL}/cover'
-    result = requests.get(target_url, params=req_args, headers=headers)
-    if result.status_code == 200:
-        return result.content, 200, {"Content-Type": result.headers['Content-Type']}
-    elif res := local_cover_search(title, artist, album):
+    try:
+        result = requests.get(target_url, params=req_args, headers=headers, timeout=10)
+        if result.status_code == 200:
+            return result.content, 200, {"Content-Type": result.headers['Content-Type']}
+        elif result.status_code == 404:
+            pass
+    except requests.RequestException as e:
+        # 聚合 API 不可达，降级到本地平台搜索
+        pass
+
+    if res := local_cover_search(title, artist, album):
         return res
-    elif result.status_code == 404:
-        abort(404)
-    else:
-        abort(500, '服务存在错误，暂时无法查询')
+    abort(404, '未找到封面')
 
 
 @v1_bp.route('/cover/<path:s_type>', methods=['GET'], endpoint='cover_new_endpoint')
