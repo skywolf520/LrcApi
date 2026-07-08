@@ -1,9 +1,12 @@
+import os
 import requests
 import logging
 from mod.args import args
 
 
 logger = logging.getLogger(__name__)
+
+LRC_API_URL = os.environ.get('LRC_API_URL', 'https://api.lrc.cx')
 
 
 headers = {
@@ -15,7 +18,7 @@ headers = {
 
 def search(title='', artist='', album='') -> list:
     try:
-        url = f"https://api.lrc.cx/jsonapi?title={title}&artist={artist}&album={album}&path=None&limit=1&api=lrcapi"
+        url = f"{LRC_API_URL}/jsonapi?title={title}&artist={artist}&album={album}&path=None&limit=1&api=lrcapi"
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             return response.json()
